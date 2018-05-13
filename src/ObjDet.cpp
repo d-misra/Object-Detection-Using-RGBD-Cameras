@@ -4,10 +4,10 @@
 #include <tf/transform_datatypes.h>
 #include <tf/transform_listener.h>
 #include <tf/transform_broadcaster.h>
-#include <sensor_msgs/PointCloud2.h> 
+#include <sensor_msgs/PointCloud2.h>
 
 // PCL specific includes
-#include <pcl_conversions/pcl_conversions.h> 
+#include <pcl_conversions/pcl_conversions.h>
 #include "pcl_ros/transforms.h"
 
 #include <pcl/filters/voxel_grid.h>
@@ -27,9 +27,21 @@ int main(int argc, char *argv[])
   ros::NodeHandle priv_nh_("~");
 
   std::string cloud_topic, world_frame, camera_frame;
-//  world_frame="kinect_link";
-//  camera_frame="kinect_link";
-//  cloud_topic="kinect/depth_registered/points";
+
+  /*If want to test with a static scene, load the PCD file in rviz
+
+  roscore
+  rosrun tf2_ros static_transform_publisher 0 0 0 0 0 0 world_frame kinect_link
+  rosrun pcl_ros pcd_to_pointcloud pcd_file.pcd 0.1 _frame_id:=kinect_link cloud_pcd:=kinect/depth_registered/points
+  rosrun rviz rviz
+
+  And uncomment:
+
+  world_frame="kinect_link";
+  camera_frame="kinect_link";
+  cloud_topic="kinect/depth_registered/points";
+
+  */
 
   world_frame="camera_link";
   camera_frame="camera_link";
@@ -43,7 +55,7 @@ int main(int argc, char *argv[])
 
  while (ros::ok())
  {
-  
+
   std::string topic = nh.resolveName(cloud_topic);
   ROS_INFO_STREAM("Cloud service called; waiting for a PointCloud2 on topic "<< topic);
   sensor_msgs::PointCloud2::ConstPtr recent_cloud =
@@ -65,7 +77,7 @@ int main(int argc, char *argv[])
 //               ros::topic::waitForMessage<sensor_msgs::PointCloud2>(topic, nh);
   pcl_ros::transformPointCloud(world_frame, stransform, *recent_cloud, transformed_cloud);
 
-  
+
   pcl::PointCloud<pcl::PointXYZ> cloud;
   pcl::fromROSMsg (transformed_cloud, cloud);
 
@@ -104,7 +116,7 @@ int main(int argc, char *argv[])
     ROS_WARN_STREAM ("Could not estimate a planar model for the given dataset.") ;
     //break;
   }
-  
+
   // Extract the planar inliers from the input cloud
   pcl::ExtractIndices<pcl::PointXYZ> extract;
   //extract.setInputCloud (cropped_cloud);
@@ -152,7 +164,7 @@ int main(int argc, char *argv[])
     pcl::toROSMsg(*cloud_cluster, *tempROSMsg);
     pc2_clusters.push_back(tempROSMsg);
   }
-   
+
    //Centroid computation of clustered objects
    Eigen::Vector4f centroid;
    pcl::compute3DCentroid(*(clusters.at(0)),centroid);
@@ -160,13 +172,13 @@ int main(int argc, char *argv[])
    double x, y, z;
    x = centroid[0];
    y = centroid[1];
-   z = centroid[2];   
+   z = centroid[2];
 
    double distance = sqrt(x*x + y*y + z*z);
 
    std::cout << "most dense cluster has ::" << clusters.at(0)->points.size() << "points\n";
-   std::cout << "centroid of most dense object is::" << x << "," << y << "," << z << "\n"; 
-   std::cout << "distance from object::" << distance << "\n"; 
+   std::cout << "centroid of most dense object is::" << x << "," << y << "," << z << "\n";
+   std::cout << "distance from object::" << distance << "\n";
 
 
   sensor_msgs::PointCloud2::Ptr pc2_cloud (new sensor_msgs::PointCloud2);
@@ -188,7 +200,7 @@ int main(int argc, char *argv[])
   pc5_cloud->header.frame_id=world_frame;
   pc5_cloud->header.stamp=ros::Time::now();
   cluster_pub.publish(pc5_cloud);
-  
+
   pcl::toROSMsg(*(clusters.at(1)), *pc5_cloud); //euclidean clustering
   pc5_cloud->header.frame_id=world_frame;
   pc5_cloud->header.stamp=ros::Time::now();
@@ -202,33 +214,3 @@ int main(int argc, char *argv[])
    }
   return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
