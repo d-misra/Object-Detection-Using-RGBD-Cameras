@@ -8,3 +8,4 @@ Functions from point cloud library http://pointclouds.org/ are used to perform:
 3. Euclidean Clustering to group points belonging to each object
 4. Computing centroids of clusters to detect object location
 
+This perception module is part of my master thesis on a reinforcement learning problem in robotics, details can be found here https://github.com/d-misra/Master-Thesis
